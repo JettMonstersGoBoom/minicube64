@@ -6,9 +6,7 @@ main
 main.exe
 minicube.exe
 _build/*
-
-makefile
-makefileold
-MiniCube.make
 *.o 
 .DS_Store
+retroarch/minicube_libretro.so
+retroarch/log.txt

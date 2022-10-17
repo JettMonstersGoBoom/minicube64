@@ -1,7 +1,10 @@
+#ifndef RETRO_CORE
 #include <MiniFB.h>
+#endif 
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <stdbool.h>
 #include <string.h>
 
 #include "fake6502.h"
@@ -10,15 +13,15 @@
 #include "machine.h"
 #include "MiniFB_prim.h"
 
+// don't use these for retroarch core
+#ifndef RETRO_CORE
 #define MSF_GIF_IMPL
 #include "msf_gif.h"
-
 uint32_t gif_frame[(64*MACHINE_SCALE)*(64*MACHINE_SCALE)];
-
 MsfGifState gifState = {};
-
 #define SOKOL_IMPL
 #include "sokol_audio.h"
+#endif 
 
 uint8_t memory[1<<16];
 uint8_t default_palette[256*3];
@@ -163,10 +166,10 @@ char debug_line[256];
 #else
 	wsg_reset(&memory[IO_AUDIO_REGS]);
 #endif
-
+#ifndef RETRO_CORE
 	msf_gif_begin(&gifState, (64*MACHINE_SCALE), (64*MACHINE_SCALE));
-
 	saudio_setup(&(saudio_desc){.stream_cb = my_stream_callback,.num_channels = 1});
+#endif 	
 }
 
 void next_view()
@@ -184,7 +187,6 @@ void display_machine()
 
 	uint8_t vramblock = read6502(0x100);
 	uint8_t *vram = &memory[vramblock*4096];
-	uint8_t byt;
 
 	exec6502((6400000)/60);
 
@@ -268,6 +270,7 @@ void display_machine()
 		}
 	}
 
+#ifndef RETRO_CORE
 	//	save gif
 	if (vramblock!=0)
 	{
@@ -287,7 +290,7 @@ void display_machine()
 		}
 		msf_gif_frame(&gifState,(uint8_t*)&gif_frame[0], 2, 32, (64*MACHINE_SCALE)*4);
 	}
-
+#endif 
 	if ((status & FLAG_INTERRUPT)==0)
 	{
 		irq6502();
@@ -297,13 +300,15 @@ void display_machine()
 
 void kill_machine()
 {
+#ifndef RETRO_CORE
 	MsfGifResult result = msf_gif_end(&gifState);
 	FILE * fp = fopen("minicube.gif", "wb");
 	fwrite(result.data, result.dataSize, 1, fp);
 	fclose(fp);
 	msf_gif_free(result);
+	saudio_shutdown();
+#endif 
 #ifdef NES_APU
 	apu_destroy(&APU);
 #endif
-	saudio_shutdown();
 }

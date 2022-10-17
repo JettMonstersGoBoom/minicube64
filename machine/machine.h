@@ -1,5 +1,3 @@
-#include <MiniFB.h>
-
 #define MACHINE_SCALE 4
 
 void reset_machine();

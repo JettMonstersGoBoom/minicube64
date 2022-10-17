@@ -1,0 +1,4 @@
+CFLAGS   += -I ../assembler/ -I ../machine/ -I ../cpu/ -I ../apu/ -I.
+CFLAGS   += -DNES_APU -D ASM_LIB -DRETRO_CORE
+SOURCES_C   := $(CORE_DIR)/minicube_core.c ../machine/machine.c minifb_prim.c ../apu/nes_apu.c ../cpu/fake6502.c ../assembler/asm6f.c
+SOURCES_CXX := 
