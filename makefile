@@ -6,6 +6,7 @@ SRC_MAIN  := main.c \
 	cpu/fake6502.c \
 	assembler/asm6f.c \
 	machine/machine.c \
+	machine/blitter.c \
 	apu/wsg.c \
 	apu/nes_apu.c
 
@@ -50,6 +51,7 @@ endif
 # OS specific options.
 ifeq ($(OS),Windows_NT)
 	EXT = .exe
+	CFLAGS     += -D_WIN32
 	SRC_MINIFB += minifb/src/windows/WinMiniFB.c
 	LDFLAGS += -l gdi32 -l ole32
 else

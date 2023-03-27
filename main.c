@@ -75,7 +75,7 @@ keyboard(struct mfb_window *window, mfb_key key, mfb_key_mod mod, bool isPressed
 				next_view();
 			}
 		}
-    fprintf(stdout, "%s > keyboard: key: %s (pressed: %d) [key_mod: %x] key %x\n", window_title, mfb_get_key_name(key), isPressed, mod, key);
+//    fprintf(stdout, "%s > keyboard: key: %s (pressed: %d) [key_mod: %x] key %x\n", window_title, mfb_get_key_name(key), isPressed, mod, key);
     if(key == KB_KEY_ESCAPE) {
         mfb_close(window);
     }
@@ -101,35 +101,36 @@ int ox,oy;
 
 int main(int argc,char **argv)
 {
-    struct mfb_window *window = mfb_open_ex("minicube64", g_width, g_height, WF_RESIZABLE);
-    if (!window)
-        return 0;
+	struct mfb_window *window = mfb_open_ex("minicube64", g_width, g_height, WF_RESIZABLE);
+	if (!window)
+			return 0;
 
-    mfb_set_keyboard_callback(window, keyboard);
+	mfb_set_keyboard_callback(window, keyboard);
 
-    g_buffer = (uint32_t *) malloc(g_width * g_height * 4);
-    mfb_set_resize_callback(window, resize);
+	g_buffer = (uint32_t *) malloc(g_width * g_height * 4);
+	mfb_set_resize_callback(window, resize);
 
-    resize(window, g_width*3, g_height*3);  // to resize buffer
+	resize(window, g_width*3, g_height*3);  // to resize buffer
 
-    reset_machine(argv[1]);
+	reset_machine(argv[1]);
 
     // Manual assignment of draw buffer on window to avoid compatibility issues
     // with X11.
 	SWindowData *window_data = (SWindowData *) window;
 	window_data->draw_buffer = g_buffer;
+	mfb_set_target_fps(60);
 
-    mfb_update_state state;
-    do {
-        display_machine();
-        state = mfb_update_ex(window, g_buffer, g_width, g_height);
-        if (state != STATE_OK) {
-            window = 0x0;
-            break;
-        }
-    } while(mfb_wait_sync(window));
+	mfb_update_state state;
+	do {
+			display_machine();
+			state = mfb_update_ex(window, g_buffer, g_width, g_height);
+			if (state != STATE_OK) {
+					window = 0x0;
+					break;
+			}
+	} while(mfb_wait_sync(window));
 
-    kill_machine();
+	kill_machine();
 
-    return 0;
+	return 0;
 }

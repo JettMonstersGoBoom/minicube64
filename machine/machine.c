@@ -1,3 +1,9 @@
+
+//	changes 
+//	reduced CPU to 1mhz 
+//	added blitter 
+
+
 #ifndef RETRO_CORE
 #include <MiniFB.h>
 #endif 
@@ -12,6 +18,7 @@
 #include "wsg.h"
 #include "machine.h"
 #include "MiniFB_prim.h"
+#include "blitter.h"
 
 // don't use these for retroarch core
 #ifndef RETRO_CORE
@@ -70,6 +77,7 @@ uint8_t read6502(uint16_t address)
 	return memory[address];
 
 }
+
 void write6502(uint16_t address, uint8_t value)
 {
 #ifdef NES_APU
@@ -78,8 +86,21 @@ void write6502(uint16_t address, uint8_t value)
 		apu_write(address,value);
 	}
 #endif
+
+
 //	printf("W8 %x = %x\n",address,value);
 	memory[address] = value;
+
+	if (address==BLITTER_KEY)
+	{
+		color_key=value;
+	}
+	if (address==BLITTER_TRIGGER)
+	{
+		blit = (_blitter_t_*)&memory[BLITTER_LOC];
+		blitData();
+	}
+
 }
 
 void my_stream_callback(float* buffer, int num_frames, int num_channels)
@@ -156,7 +177,7 @@ char debug_line[256];
 	}
 	reset6502();
 	pc = 0x200;
-
+	bpixels=0;
 
 #ifdef NES_APU
 	APU=apu_create(0,44100,60,16);
@@ -177,9 +198,13 @@ void next_view()
 	debug_view++;
 }
 
+uint32_t rgb_palette[256];
+
 void display_machine()
 {
 	int i=0;
+
+	bpixels=0;
 	uint8_t paletteblock = read6502(0x101);
 	uint8_t *palette = &memory[paletteblock*256];
 	if (paletteblock==0)
@@ -188,7 +213,12 @@ void display_machine()
 	uint8_t vramblock = read6502(0x100);
 	uint8_t *vram = &memory[vramblock*4096];
 
-	exec6502((6400000)/60);
+	for (int c=0;c<256;c++)
+	{
+		rgb_palette[c] = MFB_RGB(palette[(c*3)],palette[(c*3)+1],palette[(c*3)+2]);
+	}
+
+	exec6502((1000000)/60);
 
 	debug_view&=1;
 
@@ -201,8 +231,7 @@ void display_machine()
 			for (int x=0;x<64;x++)
 			{
 				uint8_t byt = vram[i&0xfff];
-				int lookup = byt*3;
-				mfb_rect_fill(x*MACHINE_SCALE,y*MACHINE_SCALE,MACHINE_SCALE,MACHINE_SCALE,MFB_RGB(palette[lookup], palette[lookup+1],palette[lookup+2]));
+				mfb_rect_fill(x*MACHINE_SCALE,y*MACHINE_SCALE,MACHINE_SCALE,MACHINE_SCALE,rgb_palette[byt]);
 				i++;
 			}
 		}
@@ -291,11 +320,10 @@ void display_machine()
 		msf_gif_frame(&gifState,(uint8_t*)&gif_frame[0], 2, 32, (64*MACHINE_SCALE)*4);
 	}
 #endif 
-	if ((status & FLAG_INTERRUPT)==0)
+	if (irq_active==1)
 	{
 		irq6502();
 	}
-
 }
 
 void kill_machine()

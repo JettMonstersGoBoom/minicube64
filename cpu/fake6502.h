@@ -6,7 +6,10 @@ void nmi6502();
 
 extern uint16_t pc;
 extern uint8_t sp, a, x, y, status;
-#define FLAG_INTERRUPT 0x04
+extern char irq_active;
+extern uint32_t clockticks6502, clockgoal6502;
+extern uint32_t instructions;
+
 uint8_t read6502(uint16_t address);
 void write6502(uint16_t address, uint8_t value);
 int disasm6502(uint16_t pc, char *line, unsigned int max_line);

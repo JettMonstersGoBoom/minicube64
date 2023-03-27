@@ -10,3 +10,5 @@ void kill_machine();
 #define IO_INPUT 0x102
 #define IO_AUDIO 0x104
 #define IO_AUDIO_REGS 0x110
+
+extern uint8_t memory[1<<16];

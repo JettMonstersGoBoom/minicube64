@@ -129,6 +129,7 @@
 
 #define saveaccum(n) a = (uint8_t)((n) & 0x00FF)
 
+char irq_active=0;
 
 //flag modifier macros
 #define setcarry() status |= FLAG_CARRY
@@ -434,6 +435,7 @@ static void bpl() {
 }
 
 static void brk() {
+		printf("brk %04X\n",pc);
     pc++;
     push16(pc); //push next instruction address onto stack
     push8(status | FLAG_BREAK); //push CPU status to stack
@@ -468,6 +470,7 @@ static void cld() {
 }
 
 static void cli() {
+		irq_active=1;
     clearinterrupt();
 }
 
@@ -731,7 +734,9 @@ static void sed() {
     setdecimal();
 }
 
+
 static void sei() {
+		irq_active=0;
     setinterrupt();
 }
 
